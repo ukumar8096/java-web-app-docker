@@ -1,0 +1,52 @@
+node{
+    
+def MavenHome=tool name: "Apache-Maven-3.9.2"
+
+echo "GitHub Branch Name ${env.BRANCH_NAME}"
+echo "Jenkins Job Number ${env.JOB_Number}"
+echo "Jenkins URL ${env.JENKINS_URL}"
+echo "Jenkins Node Name ${env.NODE_NAME}"
+echo "Jenkins Home ${env.JENKINS_HOME}"
+echo "Jenkins JOB Name ${env.JOB_NAME}"
+
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '2', artifactNumToKeepStr: '4', daysToKeepStr: '2', numToKeepStr: '4')), [$class: 'JobLocalConfiguration', changeReasonComment: '']])
+
+stage( 'CheckoutCodefromGithub' ){
+    
+    git credentialsId: '8f9b51c8-762c-4e22-b562-c40f8557e461', url: 'https://github.com/ukumar8096/java-web-app-docker.git'
+    
+}
+ stage( 'Build'){
+     
+     
+    sh  "${MavenHome}/bin/mvn clean package"
+    
+ }   
+
+stage( 'SonarQubeReport'){
+
+    sh  "${MavenHome}/bin/mvn sonar:sonar"
+}
+
+stage( 'DeploytoNexusrepo'){
+
+    sh "${MavenHome}/bin/mvn clean deploy"    
+}
+
+stage( 'DeploytoTomcat' ){
+    
+    sshagent(['228d91d6-4727-4409-bb7d-64df0ac37eb3']) {
+    sh " scp -o StrictHostKeyChecking=no target/java-web-app-1.0.war ec2-user@43.205.177.200:/opt/apache-tomcat-9.0.76/webapps/"
+
+}
+
+stage( 'Email Notification'){
+    emailext body: '''Pipeline scripted way is successfully completed
+
+Regards,
+Udaya Kumar L''', subject: 'Build_Status-Success', to: 'ukumar8096@gmail.com'
+}   
+}
+}
+
+
