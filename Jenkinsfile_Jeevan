@@ -36,7 +36,7 @@ stage( 'DeploytoNexusrepo'){
 stage( 'DeploytoTomcat' ){
     
     sshagent(['228d91d6-4727-4409-bb7d-64df0ac37eb3']) {
-    sh " scp -o StrictHostKeyChecking=no target/java-web-app-1.0.war ec2-user@43.205.177.200:/opt/apache-tomcat-9.0.76/webapps/"
+    sh " scp -o StrictHostKeyChecking=no target/java-web-app-1.0.war ec2-user@13.234.35.207/opt/apache-tomcat-9.0.76/webapps/"
 
 }
 
